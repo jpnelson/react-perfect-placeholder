@@ -30,7 +30,17 @@ export default class PerfectPlaceholder extends React.Component<OwnProps> {
       width: `${dimensions.width}px`,
       height: `${dimensions.height}px`,
     } : undefined;
-    return <div style={{ ...style, overflow: 'auto' }} ref={this.setRef}>{this.props.children}</div>;
+    return (
+      <div
+        style={{
+          ...style,
+          padding: '0.05px' // to prevent collapsing margin
+        }}
+        ref={this.setRef}
+      >
+        {this.props.children}
+      </div>
+    );
   }
 
   public componentDidUpdate() {
