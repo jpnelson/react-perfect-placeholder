@@ -14,7 +14,12 @@ export default class PerfectPlaceholder extends React.Component<OwnProps> {
   private wrapper: Element | null = null;
 
   public render() {
-    const style = this.props.isLoading ? this.getDimensionsFromStorage() : {}
+    const dimensions = this.getDimensionsFromStorage();
+
+    const style = this.props.isLoading ? {
+      width: dimensions ? `${dimensions.width}px` : 'auto',
+      height: dimensions ? `${dimensions.height}px` : 'auto',
+    } : undefined;
     return <div style={style} ref={this.setRef}>{this.props.children}</div>;
   }
 
