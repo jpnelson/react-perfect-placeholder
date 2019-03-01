@@ -1,3 +1,10 @@
 {
-  "extends": "tslint-config-airbnb"
+  "extends": [
+    "tslint:recommended",
+    "tslint-react",
+    "tslint-eslint-rules"
+  ],
+  "rules": {
+    "strict-null-checks": true
+  }
 }
