@@ -2,8 +2,10 @@
   "name": "react-perfect-placeholder",
   "version": "0.1.0",
   "description": "A perfect placeholder component that stores and restores its dimensions to and from localstorage",
-  "main": "src/index.ts",
+  "main": "dist/perfect-placeholder.min.js",
+  "module": "dist/react-select.esm.js",
   "scripts": {
+    "commit": "git-cz",
     "build": "rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,6 +19,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/react": "^16.8.6",
+    "commitizen": "^3.0.7",
     "react": "^16.8.3",
     "react-dom": "^16.8.3",
     "rollup-plugin-commonjs": "^9.2.1",
