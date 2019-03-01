@@ -6,9 +6,8 @@ interface OwnProps {
 }
 
 interface SavedStyle {
-  width: string;
-  height: string;
-  margin: string;
+  width: number;
+  height: number;
 }
 
 interface SavedPlaceholder {
@@ -28,11 +27,10 @@ export default class PerfectPlaceholder extends React.Component<OwnProps> {
     const dimensions = this.getStylesFromStorage();
 
     const style = this.props.isLoading && dimensions ? {
-      width: dimensions.width,
-      height: dimensions.height,
-      margin: dimensions.margin,
+      width: `${dimensions.width}px`,
+      height: `${dimensions.height}px`,
     } : undefined;
-    return <div style={style} ref={this.setRef}>{this.props.children}</div>;
+    return <div style={{ ...style, overflow: 'auto' }} ref={this.setRef}>{this.props.children}</div>;
   }
 
   public componentDidUpdate() {
@@ -82,11 +80,10 @@ export default class PerfectPlaceholder extends React.Component<OwnProps> {
       return null;
     }
 
-    const { width, height, margin } = window.getComputedStyle(this.wrapper);
+    const { width, height } = this.wrapper.getBoundingClientRect();
     return {
       width,
       height,
-      margin
     }
   }
 
