@@ -21,7 +21,8 @@ interface SavedPlaceholder {
 const MATCHING_MARGIN = 0.25; // % by which we will consider the dimensions a match good enough to try our intermediate styles
 
 export default class PerfectPlaceholder extends React.Component<OwnProps> {
-  private wrapper: Element | null = null;
+  private wrapper: HTMLElement | null = null;
+  private timeout: number | null = null;
 
   public render() {
     const dimensions = this.getStylesFromStorage();
@@ -29,6 +30,7 @@ export default class PerfectPlaceholder extends React.Component<OwnProps> {
     const style = this.props.isLoading && dimensions ? {
       width: `${dimensions.width}px`,
       height: `${dimensions.height}px`,
+      transition: 'width 200ms, height 200ms'
     } : undefined;
     return (
       <div
@@ -47,10 +49,27 @@ export default class PerfectPlaceholder extends React.Component<OwnProps> {
     if (!this.props.isLoading) {
       const styles = this.getStylesFromWrapper();
       styles && this.saveStylesToStorage(styles);
+
+      if (this.wrapper) {
+        this.wrapper.style.width = `${styles.width}px`;
+        this.wrapper.style.height = `${styles.height}px`;
+
+        this.timeout = window.setTimeout(() => {
+          if (this.wrapper) {
+            this.wrapper.setAttribute('style', '');
+          }
+        }, 1000);
+      }
     }
   }
 
-  private setRef = (ref: Element) => {
+  public componentWillUnmount() {
+    if (this.timeout) {
+      window.clearTimeout(this.timeout);
+    }
+  }
+
+  private setRef = (ref: HTMLElement) => {
     this.wrapper = ref;
   }
 
