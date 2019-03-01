@@ -35,10 +35,6 @@ export default class PerfectPlaceholder extends React.Component<OwnProps> {
   }
 
   private getKey = (): string => {
-    if (!this.wrapper) {
-      return null;
-    }
-
     return `_rpp:${this.props.id}:${window.innerWidth}x${window.innerHeight}`;
   }
 
