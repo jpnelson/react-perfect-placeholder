@@ -5,28 +5,40 @@ interface OwnProps {
   id: string;
 }
 
-interface Dimensions {
-  width: number;
-  height: number;
+interface SavedStyle {
+  width: string;
+  height: string;
+  margin: string;
 }
+
+interface SavedPlaceholder {
+  styles: SavedStyle
+  matching: {
+    windowInnerWidth: number;
+    windowInnerHeight: number;
+  }
+}
+
+const MATCHING_MARGIN = 0.25; //% by which we will consider the dimensions a match good enough to try our intermediate styles
 
 export default class PerfectPlaceholder extends React.Component<OwnProps> {
   private wrapper: Element | null = null;
 
   public render() {
-    const dimensions = this.getDimensionsFromStorage();
+    const dimensions = this.getStylesFromStorage();
 
-    const style = this.props.isLoading ? {
-      width: dimensions ? `${dimensions.width}px` : 'auto',
-      height: dimensions ? `${dimensions.height}px` : 'auto',
+    const style = this.props.isLoading && dimensions ? {
+      width: dimensions.width,
+      height: dimensions.height,
+      margin: dimensions.margin,
     } : undefined;
     return <div style={style} ref={this.setRef}>{this.props.children}</div>;
   }
 
   public componentDidUpdate() {
     if (!this.props.isLoading) {
-      const dimensions = this.getDimensionsFromWrapper();
-      dimensions && this.saveDimensionsToStorage(dimensions);
+      const styles = this.getStylesFromWrapper();
+      styles && this.saveStylesToStorage(styles);
     }
   }
 
@@ -35,10 +47,10 @@ export default class PerfectPlaceholder extends React.Component<OwnProps> {
   }
 
   private getKey = (): string => {
-    return `_rpp:${this.props.id}:${window.innerWidth}x${window.innerHeight}`;
+    return `_rpp:${this.props.id}`;
   }
 
-  private saveDimensionsToStorage = (dimensions: Dimensions) => {
+  private saveStylesToStorage = (styles: SavedStyle) => {
     if (!window.localStorage) {
       return;
     }
@@ -51,32 +63,53 @@ export default class PerfectPlaceholder extends React.Component<OwnProps> {
 
     window.localStorage.setItem(
       key,
-      JSON.stringify(dimensions),
+      JSON.stringify(this.makePlaceholder(styles)),
     );
   }
 
-  private getDimensionsFromWrapper = (): Dimensions | null => {
+  private makePlaceholder = (styles: SavedStyle): SavedPlaceholder => {
+    return {
+      styles,
+      matching: {
+        windowInnerWidth: window.innerWidth,
+        windowInnerHeight: window.innerHeight,
+      }
+    }
+  }
+
+  private getStylesFromWrapper = (): SavedStyle | null => {
     if (!this.wrapper) {
       return null;
     }
 
-    const { width, height } = this.wrapper.getBoundingClientRect();
+    const { width, height, margin } = window.getComputedStyle(this.wrapper);
     return {
       width,
       height,
+      margin
     }
   }
 
-  private getDimensionsFromStorage = (): Dimensions | null => {
+  private getStylesFromStorage = (): SavedStyle | null => {
     if (!window.localStorage) {
       return null;
     }
 
     const item = window.localStorage.getItem(this.getKey());
+
     if (!item) {
       return null;
     }
+    const placeholder = (JSON.parse(item) as SavedPlaceholder);
 
-    return JSON.parse(item);
+    if (
+      placeholder.matching.windowInnerHeight > window.innerHeight * (1 - MATCHING_MARGIN) &&
+      placeholder.matching.windowInnerHeight < window.innerHeight * (1 + MATCHING_MARGIN) &&
+      placeholder.matching.windowInnerWidth > window.innerWidth * (1 - MATCHING_MARGIN) &&
+      placeholder.matching.windowInnerWidth < window.innerWidth * (1 + MATCHING_MARGIN)
+    ) {
+      return placeholder.styles;
+    } else {
+      return null;
+    }
   }
-}
