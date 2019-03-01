@@ -18,7 +18,7 @@ interface SavedPlaceholder {
   }
 }
 
-const MATCHING_MARGIN = 0.25; //% by which we will consider the dimensions a match good enough to try our intermediate styles
+const MATCHING_MARGIN = 0.25; // % by which we will consider the dimensions a match good enough to try our intermediate styles
 
 export default class PerfectPlaceholder extends React.Component<OwnProps> {
   private wrapper: Element | null = null;
