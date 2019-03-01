@@ -16,6 +16,9 @@
     "skeleton",
     "localstorage"
   ],
+  "files": [
+    "dist"
+  ],
   "author": "Joshua Nelson",
   "license": "MIT",
   "devDependencies": {
