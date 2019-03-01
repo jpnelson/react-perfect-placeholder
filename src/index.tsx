@@ -113,3 +113,4 @@ export default class PerfectPlaceholder extends React.Component<OwnProps> {
       return null;
     }
   }
+}
