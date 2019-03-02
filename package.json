@@ -3,10 +3,12 @@
   "version": "0.0.0-development",
   "description": "A perfect placeholder component that stores and restores its dimensions to and from localstorage",
   "main": "dist/perfect-placeholder.min.js",
-  "module": "dist/react-select.esm.js",
+  "module": "dist/perfect-placeholder.esm.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "commit": "git-cz",
     "build": "rollup -c",
+    "watch": "rollup -wc",
     "test": "echo \"Error: no test specified\" && exit 0",
     "prepublish": "npm run build",
     "semantic-release": "semantic-release"
@@ -32,7 +34,7 @@
     "rollup-plugin-commonjs": "^9.2.1",
     "rollup-plugin-node-resolve": "^4.0.1",
     "rollup-plugin-terser": "^4.0.4",
-    "rollup-plugin-typescript": "^1.0.0",
+    "rollup-plugin-typescript2": "^0.19.3",
     "semantic-release": "^15.13.3",
     "tslib": "^1.9.3",
     "tslint": "^5.13.1",
@@ -46,5 +48,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/jpnelson/react-perfect-placeholder.git"
-  }
+  },
+  "dependencies": {}
 }

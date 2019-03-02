@@ -1,142 +1,80 @@
 import * as React from 'react';
-
-interface OwnProps {
-  isLoading: boolean;
-  id: string;
-}
-
-interface SavedStyle {
-  width: number;
-  height: number;
-}
-
-interface SavedPlaceholder {
-  styles: SavedStyle
-  matching: {
-    windowInnerWidth: number;
-    windowInnerHeight: number;
-  }
-}
-
-const MATCHING_MARGIN = 0.25; // % by which we will consider the dimensions a match good enough to try our intermediate styles
+import { cache } from './cache';
 
 export default class PerfectPlaceholder extends React.Component<OwnProps> {
-  private wrapper: HTMLElement | null = null;
+  private placeholder: HTMLElement | null = null;
+  private observer: HTMLElement | null = null;
   private timeout: number | null = null;
 
   public render() {
-    const dimensions = this.getStylesFromStorage();
+    const key = this.getKey();
+    const dimensions = cache.getDimensions(key);
 
-    const style = this.props.isLoading && dimensions ? {
-      width: `${dimensions.width}px`,
-      height: `${dimensions.height}px`,
-      transition: 'width 200ms, height 200ms'
-    } : undefined;
     return (
       <div
+        ref={this.setPlaceholderRef}
         style={{
-          ...style,
-          padding: '0.05px' // to prevent collapsing margin
+          border: '1px solid blue',
         }}
-        ref={this.setRef}
       >
-        {this.props.children}
+        <div
+          ref={this.setObserverRef}
+          style={{
+            padding: '0.05px' // to prevent collapsing margin
+          }}
+        >
+          {this.props.children}
+        </div>
       </div>
     );
   }
 
   public componentDidUpdate() {
+    console.log({ isLoading: this.props.isLoading })
     if (!this.props.isLoading) {
-      const styles = this.getStylesFromWrapper();
-      styles && this.saveStylesToStorage(styles);
+      const dimensions = this.getCurrentDimensions();
+      dimensions && cache.saveDimensions(this.getKey(), dimensions);
 
-      if (this.wrapper) {
-        this.wrapper.style.width = `${styles.width}px`;
-        this.wrapper.style.height = `${styles.height}px`;
+      // if (this.placeholder) {
+      //   this.placeholder.style.width = `${styles.width}px`;
+      //   this.placeholder.style.height = `${styles.height}px`;
 
-        this.timeout = window.setTimeout(() => {
-          if (this.wrapper) {
-            this.wrapper.setAttribute('style', '');
-          }
-        }, 1000);
-      }
+      //   this.timeout = window.setTimeout(() => {
+      //     if (this.placeholder) {
+      //       this.placeholder.setAttribute('style', '');
+      //     }
+      //   }, 1000);
+      // }
     }
   }
 
   public componentWillUnmount() {
-    if (this.timeout) {
-      window.clearTimeout(this.timeout);
-    }
+    // if (this.timeout) {
+    //   window.clearTimeout(this.timeout);
+    // }
   }
 
-  private setRef = (ref: HTMLElement) => {
-    this.wrapper = ref;
+  private setObserverRef = (ref: HTMLElement) => {
+    this.observer = ref;
+  }
+
+  private setPlaceholderRef = (ref: HTMLElement) => {
+    this.placeholder = ref;
   }
 
   private getKey = (): string => {
     return `_rpp:${this.props.id}`;
   }
 
-  private saveStylesToStorage = (styles: SavedStyle) => {
-    if (!window.localStorage) {
-      return;
-    }
-
-    const key = this.getKey();
-
-    if (!key) {
-      return;
-    }
-
-    window.localStorage.setItem(
-      key,
-      JSON.stringify(this.makePlaceholder(styles)),
-    );
-  }
-
-  private makePlaceholder = (styles: SavedStyle): SavedPlaceholder => {
-    return {
-      styles,
-      matching: {
-        windowInnerWidth: window.innerWidth,
-        windowInnerHeight: window.innerHeight,
-      }
-    }
-  }
-
-  private getStylesFromWrapper = (): SavedStyle | null => {
-    if (!this.wrapper) {
+  private getCurrentDimensions = (): Dimensions | null => {
+    if (!this.observer) {
       return null;
     }
 
-    const { width, height } = this.wrapper.getBoundingClientRect();
+    const { width, height } = this.observer.getBoundingClientRect();
     return {
       width,
       height,
-    }
-  }
-
-  private getStylesFromStorage = (): SavedStyle | null => {
-    if (!window.localStorage) {
-      return null;
-    }
-
-    const item = window.localStorage.getItem(this.getKey());
-
-    if (!item) {
-      return null;
-    }
-    const placeholder = (JSON.parse(item) as SavedPlaceholder);
-
-    if (
-      placeholder.matching.windowInnerHeight > window.innerHeight * (1 - MATCHING_MARGIN) &&
-      placeholder.matching.windowInnerHeight < window.innerHeight * (1 + MATCHING_MARGIN) &&
-      placeholder.matching.windowInnerWidth > window.innerWidth * (1 - MATCHING_MARGIN) &&
-      placeholder.matching.windowInnerWidth < window.innerWidth * (1 + MATCHING_MARGIN)
-    ) {
-      return placeholder.styles;
-    } else {
-      return null;
     }
   }
 }
