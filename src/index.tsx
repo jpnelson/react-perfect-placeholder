@@ -1,20 +1,46 @@
 import * as React from 'react';
 import { cache } from './cache';
 
-export default class PerfectPlaceholder extends React.Component<OwnProps> {
+interface OwnProps {
+  isLoading: boolean;
+  id: string;
+}
+interface OwnState {
+  width?: number;
+  height?: number;
+}
+
+export default class PerfectPlaceholder extends React.Component<OwnProps, OwnState> {
   private placeholder: HTMLElement | null = null;
   private observer: HTMLElement | null = null;
+  private lastDimensions: Dimensions;
   private timeout: number | null = null;
 
-  public render() {
+  constructor(props: Readonly<OwnProps>) {
+    super(props);
+
     const key = this.getKey();
     const dimensions = cache.getDimensions(key);
 
+    
+    this.state = dimensions ? {
+      width: dimensions.width,
+      height: dimensions.height     
+    } : {
+      width: undefined,
+      height: undefined,
+    }
+  }
+
+  public render() {
+    console.log('rendering', this.state)
     return (
       <div
         ref={this.setPlaceholderRef}
         style={{
-          border: '1px solid blue',
+          transition: 'width 200ms, height 200ms',
+          width: `${this.state.width}px`,
+          height: `${this.state.height}px`,
         }}
       >
         <div
@@ -29,29 +55,48 @@ export default class PerfectPlaceholder extends React.Component<OwnProps> {
     );
   }
 
-  public componentDidUpdate() {
+  public getSnapshotBeforeUpdate(prevProps: OwnProps) {
+    if (!this.props.isLoading && prevProps.isLoading) {
+      return this.getCurrentDimensions();
+    }
+
+    return null;
+  }
+
+  public componentDidUpdate(prevProps: OwnProps, _prevState: OwnState, snapshot: Dimensions) {
     console.log({ isLoading: this.props.isLoading })
-    if (!this.props.isLoading) {
+    if (!this.props.isLoading && prevProps.isLoading) {
       const dimensions = this.getCurrentDimensions();
       dimensions && cache.saveDimensions(this.getKey(), dimensions);
+      this.setState({
+        width: snapshot.width,
+        height: snapshot.height,
+      }, () => {
+        console.log('computed style', window.getComputedStyle(this.placeholder).width, window.getComputedStyle(this.placeholder).height);
+        this.setState({
+          width: dimensions.width,
+          height: dimensions.height,
+        }, () => {
+          console.log('computed style', window.getComputedStyle(this.placeholder).width, window.getComputedStyle(this.placeholder).height);
+        });
+      });
 
-      // if (this.placeholder) {
-      //   this.placeholder.style.width = `${styles.width}px`;
-      //   this.placeholder.style.height = `${styles.height}px`;
+      this.lastDimensions = this.getCurrentDimensions();
+    
 
-      //   this.timeout = window.setTimeout(() => {
-      //     if (this.placeholder) {
-      //       this.placeholder.setAttribute('style', '');
-      //     }
-      //   }, 1000);
-      // }
+      // this.timeout = window.setTimeout(() => {
+      //   this.setState({
+      //     width: undefined,
+      //     height: undefined,
+      //   });
+      // }, 1000);
     }
   }
 
   public componentWillUnmount() {
-    // if (this.timeout) {
-    //   window.clearTimeout(this.timeout);
-    // }
+    if (this.timeout) {
+      window.clearTimeout(this.timeout);
+    }
   }
 
   private setObserverRef = (ref: HTMLElement) => {

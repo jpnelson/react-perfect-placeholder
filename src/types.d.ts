@@ -1,8 +1,3 @@
-interface OwnProps {
-  isLoading: boolean;
-  id: string;
-}
-
 interface Dimensions {
   width: number;
   height: number;
