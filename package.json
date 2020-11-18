@@ -35,7 +35,7 @@
     "rollup-plugin-node-resolve": "^4.0.1",
     "rollup-plugin-terser": "^4.0.4",
     "rollup-plugin-typescript2": "^0.19.3",
-    "semantic-release": "^15.13.3",
+    "semantic-release": "^17.2.3",
     "tslib": "^1.9.3",
     "tslint": "^5.13.1",
     "tslint-config-airbnb": "^5.11.1",
